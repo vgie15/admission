@@ -1,0 +1,6 @@
+admin@test.com
+admin123
+
+
+registrar@test.com
+registrar123
