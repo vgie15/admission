@@ -50,6 +50,9 @@ export const studentService = {
     apiClient.post('/student/course-selection', { course_id: courseId }),
   getApplicationStatus: () => apiClient.get('/student/application-status'),
   getDocuments: () => apiClient.get('/student/documents'),
+  getDocumentViewUrl: (documentId: string) => `${API_BASE_URL}/student/document/${documentId}/view`,
+  getFeedback: () => apiClient.get('/student/feedback'),
+  markFeedbackRead: (feedbackId: string) => apiClient.put(`/student/feedback/${feedbackId}/read`),
 };
 
 // Admin Service
@@ -59,15 +62,24 @@ export const adminService = {
   getStudentProfile: (studentId: string) => apiClient.get(`/admin/student/${studentId}`),
   deleteStudent: (studentId: string) => apiClient.delete(`/admin/student/${studentId}`),
   getDocumentViewUrl: (documentId: string) => `${API_BASE_URL}/admin/document/${documentId}/view`,
-  approveStudent: (studentId: string, notes?: string, approvedEnrollmentId?: string) =>
-    apiClient.put(`/admin/approve-student/${studentId}`, { notes, approved_enrollment_id: approvedEnrollmentId }),
+  sendFeedback: (studentId: string, message: string, templateKey?: string) =>
+    apiClient.post(`/admin/student/${studentId}/feedback`, { message, template_key: templateKey }),
+  approveStudent: (studentId: string, notes?: string, approvedChoiceId?: string) =>
+    apiClient.put(`/admin/approve-student/${studentId}`, { notes, approved_choice_id: approvedChoiceId }),
   rejectStudent: (studentId: string, reason?: string) =>
     apiClient.put(`/admin/reject-student/${studentId}`, { reason }),
   exportData: (filters?: any) => apiClient.get('/admin/export-data', { params: filters, responseType: 'blob' }),
-  getEnrollmentTrend: (filters?: any) => apiClient.get('/admin/analytics/enrollment-trend', { params: filters }),
+  getApprovedAdmissions: (filters?: any) => apiClient.get('/admin/approved-admissions', { params: filters }),
+  exportApprovedAdmissions: (filters?: any) =>
+    apiClient.get('/admin/export-approved-admissions', { params: filters, responseType: 'blob' }),
+  getApplicationTrend: (filters?: any) => apiClient.get('/admin/analytics/application-trend', { params: filters }),
   getApplicantsPerCourse: (filters?: any) => apiClient.get('/admin/analytics/applicants-per-course', { params: filters }),
+  getFirstChoiceDistribution: (filters?: any) => apiClient.get('/admin/analytics/first-choice-distribution', { params: filters }),
   getGenderDistribution: (filters?: any) => apiClient.get('/admin/analytics/gender-distribution', { params: filters }),
-  getEnrollmentStatus: (filters?: any) => apiClient.get('/admin/analytics/enrollment-status', { params: filters }),
+  getApprovedGenderDistribution: (filters?: any) => apiClient.get('/admin/analytics/approved-gender-distribution', { params: filters }),
+  getCityDistribution: (filters?: any) => apiClient.get('/admin/analytics/city-distribution', { params: filters }),
+  getApprovedCityDistribution: (filters?: any) => apiClient.get('/admin/analytics/approved-city-distribution', { params: filters }),
+  getApplicationStatusDistribution: (filters?: any) => apiClient.get('/admin/analytics/application-status', { params: filters }),
   getApprovalRatePerCourse: (filters?: any) => apiClient.get('/admin/analytics/approval-rate-per-course', { params: filters }),
   getCourses: () => apiClient.get('/admin/courses'),
   createCourse: (data: any) => apiClient.post('/admin/courses', data),

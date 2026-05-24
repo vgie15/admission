@@ -10,7 +10,7 @@ type PortalHeaderProps = {
 };
 
 const PortalHeader = ({ title, subtitle, backLabel, onBack, actions }: PortalHeaderProps) => (
-  <header className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 shadow-lg shadow-blue-900/10">
+  <header className="sticky top-0 z-40 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 shadow-lg shadow-blue-900/10">
     <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-5">
       <div className="min-w-0">
         {backLabel && onBack && (

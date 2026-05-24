@@ -57,15 +57,15 @@ const StudentStatusPage = () => {
     }
   };
 
-  const getCourseChoiceBadge = (enrollment: any) => {
-    if (enrollment.status === 'enrolled') return 'approved course';
-    if (enrollment.status === 'not_selected') return 'not selected';
-    return 'pending review';
+  const getCourseChoiceBadge = (course_choice: any) => {
+    if (course_choice.status === 'enrolled') return 'Approved Choice';
+    if (course_choice.status === 'not_selected') return 'Not Selected';
+    return 'Pending Review';
   };
 
-  const getCourseChoiceColor = (enrollment: any) => {
-    if (enrollment.status === 'enrolled') return 'bg-green-50 border-green-200 text-green-800';
-    if (enrollment.status === 'not_selected') return 'bg-gray-50 border-gray-200 text-gray-700';
+  const getCourseChoiceColor = (course_choice: any) => {
+    if (course_choice.status === 'enrolled') return 'bg-green-50 border-green-200 text-green-800';
+    if (course_choice.status === 'not_selected') return 'bg-gray-50 border-gray-200 text-gray-700';
     return 'bg-blue-50 border-blue-200 text-blue-800';
   };
 
@@ -79,7 +79,7 @@ const StudentStatusPage = () => {
       />
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="mx-auto w-full max-w-7xl px-6 py-8">
         {/* Status Card */}
         <div className={`rounded-lg shadow p-12 mb-8 border ${getStatusColor(applicationStatus?.overall_status)}`}>
           <div className="text-center">
@@ -96,31 +96,31 @@ const StudentStatusPage = () => {
         </div>
 
         {/* Course Choices */}
-        {applicationStatus?.enrollments && applicationStatus.enrollments.length > 0 && (
+        {applicationStatus?.course_choices && applicationStatus.course_choices.length > 0 && (
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Course Choices</h3>
             <div className="space-y-4">
-              {[...applicationStatus.enrollments]
+              {[...applicationStatus.course_choices]
                 .sort((a: any, b: any) => (a.choice_rank || 1) - (b.choice_rank || 1))
-                .map((enrollment: any) => (
-                <div key={enrollment.id} className="border border-gray-200 rounded-lg p-6">
+                .map((course_choice: any) => (
+                <div key={course_choice.id} className="border border-gray-200 rounded-lg p-6">
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-sm font-semibold text-blue-600 mb-1">
-                        {enrollment.choice_rank === 2 ? 'Second Choice' : 'First Choice'}
+                        {course_choice.choice_rank === 2 ? 'Second Choice' : 'First Choice'}
                       </p>
                       <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                        {enrollment.courses?.name || 'Unknown Course'}
+                        {course_choice.courses?.name || 'Unknown Course'}
                       </h4>
                       <p className="text-gray-600">
-                        Code: <span className="font-semibold">{enrollment.courses?.code}</span>
+                        Code: <span className="font-semibold">{course_choice.courses?.code}</span>
                       </p>
                       <p className="text-sm text-gray-500 mt-2">
-                        Selected on {new Date(enrollment.selected_at).toLocaleDateString()}
+                        Selected on {new Date(course_choice.selected_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <span className={`px-4 py-2 rounded-full text-sm font-semibold border ${getCourseChoiceColor(enrollment)}`}>
-                      {getCourseChoiceBadge(enrollment)}
+                    <span className={`px-4 py-2 rounded-full text-sm font-semibold border ${getCourseChoiceColor(course_choice)}`}>
+                      {getCourseChoiceBadge(course_choice)}
                     </span>
                   </div>
                 </div>
@@ -129,7 +129,7 @@ const StudentStatusPage = () => {
           </div>
         )}
 
-        {(!applicationStatus?.enrollments || applicationStatus.enrollments.length === 0) && (
+        {(!applicationStatus?.course_choices || applicationStatus.course_choices.length === 0) && (
           <div className="bg-white rounded-lg shadow p-6 text-center">
             <p className="text-gray-600 mb-4">You have not selected any course choices yet.</p>
             <button

@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { studentService } from '../services/api';
-import { CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 import PortalHeader from '../components/PortalHeader';
 
 const StudentCoursesPage = () => {
   const navigate = useNavigate();
   const [courses, setCourses] = useState<any[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  const [applicationStatus, setApplicationStatus] = useState<any>(null);
+  const [notice, setNotice] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [enrolling, setEnrolling] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     loadCourses();
@@ -17,8 +20,12 @@ const StudentCoursesPage = () => {
 
   const loadCourses = async () => {
     try {
-      const response = await studentService.getAvailableCourses();
-      setCourses(response.data);
+      const [coursesResponse, statusResponse] = await Promise.all([
+        studentService.getAvailableCourses(),
+        studentService.getApplicationStatus(),
+      ]);
+      setCourses(coursesResponse.data);
+      setApplicationStatus(statusResponse.data);
     } catch (error) {
       console.error('Failed to load courses:', error);
     } finally {
@@ -26,18 +33,43 @@ const StudentCoursesPage = () => {
     }
   };
 
-  const handleEnroll = async (courseId: string) => {
-    setEnrolling(true);
+  const existingChoices = applicationStatus?.course_choices || [];
+  const approvedChoice = existingChoices.find((choice: any) => choice.status === 'enrolled');
+  const selectedChoice = existingChoices[0];
+
+  useEffect(() => {
+    if (applicationStatus?.overall_status === 'approved' && approvedChoice?.courses?.name) {
+      setNotice(`Application already approved for ${approvedChoice.courses.name}.`);
+    } else if (existingChoices.length > 0) {
+      setNotice('Course already selected.');
+    }
+  }, [applicationStatus]);
+
+  const handleSelectCourse = async (courseId: string) => {
+    if (applicationStatus?.overall_status === 'approved' && approvedChoice?.courses?.name) {
+      setNotice(`Application already approved for ${approvedChoice.courses.name}.`);
+      return;
+    }
+
+    if (existingChoices.length > 0) {
+      setNotice('Course already selected.');
+      return;
+    }
+
+    setError('');
+    setSubmitting(true);
     try {
       await studentService.selectCourse(courseId);
       setSelectedCourse(courseId);
+      setNotice('Course choice saved. Redirecting...');
       setTimeout(() => {
         navigate('/student/dashboard');
       }, 2000);
-    } catch (error) {
-      console.error('Enrollment failed:', error);
+    } catch (error: any) {
+      setError(error?.response?.data?.error || 'Course selection failed.');
+      console.error('Course selection failed:', error);
     } finally {
-      setEnrolling(false);
+      setSubmitting(false);
     }
   };
 
@@ -62,11 +94,18 @@ const StudentCoursesPage = () => {
       />
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-8">
-        {selectedCourse && (
+      <main className="mx-auto w-full max-w-7xl px-6 py-8">
+        {notice && (
           <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex gap-3">
             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-            <p className="text-green-700">Successfully enrolled! Redirecting...</p>
+            <p className="text-green-700">{notice}</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <p className="text-red-700">{error}</p>
           </div>
         )}
 
@@ -80,11 +119,19 @@ const StudentCoursesPage = () => {
                 <p className="text-sm text-gray-600 mb-1">Code: {course.code}</p>
                 <p className="text-gray-700 mb-4">{course.description}</p>
                 <button
-                  onClick={() => handleEnroll(course.id)}
-                  disabled={enrolling || selectedCourse === course.id}
+                  onClick={() => handleSelectCourse(course.id)}
+                  disabled={submitting || selectedCourse === course.id || existingChoices.length > 0}
                   className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition"
                 >
-                  {selectedCourse === course.id ? 'Enrolled!' : enrolling ? 'Enrolling...' : 'Enroll Now'}
+                  {approvedChoice?.course_id === course.id
+                    ? 'Approved Choice'
+                    : selectedChoice?.course_id === course.id || selectedCourse === course.id
+                      ? 'Course Already Selected'
+                      : existingChoices.length > 0
+                        ? 'Selection Locked'
+                        : submitting
+                          ? 'Saving...'
+                          : 'Select Course'}
                 </button>
               </div>
             ))

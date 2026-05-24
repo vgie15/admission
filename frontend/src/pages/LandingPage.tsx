@@ -12,7 +12,7 @@ const LandingPage: React.FC = () => {
     student: {
       icon: <GraduationCap className="w-7 h-7 text-white" />,
       items: [
-        { title: 'Complete Application Form', desc: 'Follow the enrollment profile and course process' },
+        { title: 'Complete Application Form', desc: 'Follow the admission profile and course process' },
         { title: 'Upload Required Documents', desc: 'Submit Form 137, PSA, Good Moral, and 2x2 Photo' },
         { title: 'Track Your Application', desc: 'View pending, accepted, or declined status updates' },
       ],
@@ -25,7 +25,7 @@ const LandingPage: React.FC = () => {
       icon: <GraduationCap className="w-7 h-7 text-white" />,
       items: [
         { title: 'Application Management', desc: 'Review, accept, and decline student applications' },
-        { title: 'Analytics Dashboard', desc: 'Access enrollment insights, charts, and KPIs' },
+        { title: 'Analytics Dashboard', desc: 'Access admission insights, charts, and KPIs' },
         { title: 'Export & Reporting', desc: 'Generate detailed Excel reports and analytics' },
       ],
       cta: 'Access Admin Portal',
@@ -36,7 +36,7 @@ const LandingPage: React.FC = () => {
     registrar: {
       icon: <GraduationCap className="w-7 h-7 text-white" />,
       items: [
-        { title: 'View-Only Dashboard', desc: 'Monitor enrollment data without changing records' },
+        { title: 'View-Only Dashboard', desc: 'Monitor admission data without changing records' },
         { title: 'Data Visualizations', desc: 'Review charts for applicants, courses, gender, and status' },
         { title: 'Read-Only Registrar Access', desc: 'No approval, decline, export, or course management actions' },
       ],
@@ -146,7 +146,7 @@ const LandingPage: React.FC = () => {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold leading-tight">PSU- Urdaneta City Campus</h1>
-                  <p className="text-blue-200 text-sm">Incoming Freshmen Enrollment System</p>
+                  <p className="text-blue-200 text-sm">Incoming Freshmen Admission System</p>
                 </div>
               </div>
             </div>
@@ -168,7 +168,7 @@ const LandingPage: React.FC = () => {
 
             {/* Description */}
             <p className="text-lg text-blue-100 leading-relaxed max-w-xl">
-              Join Pangasinan State University - Urdaneta City Campus and embark on your academic journey with our streamlined digital enrollment system.
+              Join Pangasinan State University - Urdaneta City Campus and embark on your academic journey with our streamlined digital admission system.
             </p>
 
             {/* Features Grid */}
@@ -179,7 +179,7 @@ const LandingPage: React.FC = () => {
                   <FileText className="w-6 h-6" />
                 </div>
                 <h3 className="font-bold text-white mb-1">Digital Application</h3>
-                <p className="text-xs text-blue-200">100% paperless enrollment</p>
+                <p className="text-xs text-blue-200">100% paperless admission</p>
               </div>
 
               {/* Real-time Tracking */}

@@ -25,6 +25,17 @@ def allowed_application_file(filename):
 def clean_form_value(data, key):
     return (data.get(key) or '').strip()
 
+def password_policy_error(password):
+    if len(password) < 8:
+        return 'Password must be at least 8 characters'
+    if not re.search(r'[A-Z]', password):
+        return 'Password must include at least 1 uppercase letter, 1 number, and 1 special character.'
+    if not re.search(r'\d', password):
+        return 'Password must include at least 1 uppercase letter, 1 number, and 1 special character.'
+    if not re.search(r'[^A-Za-z0-9]', password):
+        return 'Password must include at least 1 uppercase letter, 1 number, and 1 special character.'
+    return ''
+
 def validate_application_form(data, files):
     errors = {}
     required_fields = {
@@ -64,8 +75,10 @@ def validate_application_form(data, files):
 
     password = clean_form_value(data, 'password')
     confirm_password = clean_form_value(data, 'confirm_password')
-    if password and len(password) < 6:
-        errors['password'] = 'Password must be at least 6 characters'
+    if password:
+        password_error = password_policy_error(password)
+        if password_error:
+            errors['password'] = password_error
     if password and confirm_password and password != confirm_password:
         errors['confirm_password'] = 'Passwords do not match'
 
@@ -119,6 +132,10 @@ def student_register():
         required = ['email', 'password', 'first_name', 'last_name']
         if not all(k in data for k in required):
             return jsonify({'error': 'Missing required fields'}), 400
+
+        password_error = password_policy_error(data['password'])
+        if password_error:
+            return jsonify({'error': password_error, 'fields': {'password': password_error}}), 400
         
         # Hash password
         hashed_password = generate_password_hash(data['password'])
@@ -213,7 +230,7 @@ def student_application_register():
         student = student_response.data[0]
         student_id = student['id']
 
-        enrollment_rows = [
+        course_choice_rows = [
             {
                 'student_id': student_id,
                 'course_id': clean_form_value(data, 'first_choice_course'),
@@ -229,7 +246,7 @@ def student_application_register():
                 'selected_at': datetime.now().isoformat(),
             },
         ]
-        supabase.table('enrollments').insert(enrollment_rows).execute()
+        supabase.table('course_choices').insert(course_choice_rows).execute()
 
         upload_folder = os.getenv('UPLOAD_FOLDER', './uploads')
         os.makedirs(upload_folder, exist_ok=True)

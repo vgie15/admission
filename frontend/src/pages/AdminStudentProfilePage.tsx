@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { adminService } from '../services/api';
-import { Check, X, AlertCircle, Eye, XCircle } from 'lucide-react';
+import { Check, X, AlertCircle, Eye, XCircle, MessageSquare } from 'lucide-react';
 import PortalHeader from '../components/PortalHeader';
 
 const AdminStudentProfilePage = () => {
@@ -9,11 +9,14 @@ const AdminStudentProfilePage = () => {
   const navigate = useNavigate();
   const [student, setStudent] = useState<any>(null);
   const [documents, setDocuments] = useState<any[]>([]);
-  const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [courseChoices, setCourseChoices] = useState<any[]>([]);
+  const [feedback, setFeedback] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionReason, setActionReason] = useState('');
-  const [approvedEnrollmentId, setApprovedEnrollmentId] = useState('');
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [approvedChoiceId, setApprovedChoiceId] = useState('');
   const [error, setError] = useState<string>('');
   const [previewDocument, setPreviewDocument] = useState<any>(null);
 
@@ -28,7 +31,8 @@ const AdminStudentProfilePage = () => {
       const response = await adminService.getStudentProfile(studentId!);
       setStudent(response.data.student);
       setDocuments(response.data.documents);
-      setEnrollments(response.data.enrollments || []);
+      setCourseChoices(response.data.course_choices || []);
+      setFeedback(response.data.feedback || []);
     } catch (err) {
       console.error('Failed to load student:', err);
       setError('Failed to load student profile');
@@ -39,16 +43,16 @@ const AdminStudentProfilePage = () => {
 
   const handleApprove = async () => {
     if (!studentId) return;
-    if (!approvedEnrollmentId) {
+    if (!approvedChoiceId) {
       setError('Select which course choice to approve.');
       return;
     }
     setActionLoading(true);
     try {
-      await adminService.approveStudent(studentId, actionReason, approvedEnrollmentId);
+      await adminService.approveStudent(studentId, actionReason, approvedChoiceId);
       await loadStudentProfile();
       setActionReason('');
-      setApprovedEnrollmentId('');
+      setApprovedChoiceId('');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to approve student');
     } finally {
@@ -65,6 +69,32 @@ const AdminStudentProfilePage = () => {
       setActionReason('');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to reject student');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleTemplateClick = (template: { key: string; message: string }) => {
+    setSelectedTemplate(template.key);
+    setFeedbackMessage(template.message);
+  };
+
+  const handleSendFeedback = async () => {
+    if (!studentId) return;
+    if (!feedbackMessage.trim()) {
+      setError('Feedback message is required.');
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await adminService.sendFeedback(studentId, feedbackMessage.trim(), selectedTemplate || undefined);
+      await loadStudentProfile();
+      setFeedbackMessage('');
+      setSelectedTemplate('');
+      setError('');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to send feedback');
     } finally {
       setActionLoading(false);
     }
@@ -90,8 +120,24 @@ const AdminStudentProfilePage = () => {
     return type.replace(/_/g, ' ');
   };
 
-  const sortedChoices = [...enrollments].sort((a, b) => (a.choice_rank || 1) - (b.choice_rank || 1));
-  const approvedChoice = sortedChoices.find((enrollment) => enrollment.status === 'enrolled');
+  const documentFeedbackMessages: Record<string, string> = {
+    birth_certificate: 'Please upload a new Birth Certificate / PSA.',
+    form_137: 'Please upload a new Form 137 / Report Card.',
+    good_moral: 'Please upload a new Certificate of Good Moral.',
+    id_photo: 'Please upload a clearer 2x2 ID photo.',
+  };
+
+  const sortedChoices = [...courseChoices].sort((a, b) => (a.choice_rank || 1) - (b.choice_rank || 1));
+  const approvedChoice = sortedChoices.find((course_choice) => course_choice.status === 'enrolled');
+  const feedbackTemplates = [
+    ...documents
+      .filter((document) => documentFeedbackMessages[document.document_type])
+      .map((document) => ({
+        key: `document_${document.document_type}`,
+        message: documentFeedbackMessages[document.document_type],
+      })),
+    { key: 'review_profile', message: 'Please review and update your profile information.' },
+  ];
 
   if (loading) {
     return (
@@ -141,7 +187,7 @@ const AdminStudentProfilePage = () => {
       />
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="mx-auto w-full max-w-7xl px-6 py-8">
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
@@ -150,7 +196,7 @@ const AdminStudentProfilePage = () => {
         )}
 
         {/* Student Information */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="w-full bg-white rounded-lg shadow p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Personal Information</h3>
@@ -213,34 +259,34 @@ const AdminStudentProfilePage = () => {
         </div>
 
         {/* Course Choices */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="w-full bg-white rounded-lg shadow p-6 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Choices</h3>
           {sortedChoices.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {sortedChoices.map((enrollment) => (
+              {sortedChoices.map((course_choice) => (
                 <div
-                  key={enrollment.id}
+                  key={course_choice.id}
                   className={`rounded-lg border p-4 ${
-                    enrollment.status === 'enrolled'
+                    course_choice.status === 'enrolled'
                       ? 'border-green-200 bg-green-50'
-                      : enrollment.status === 'not_selected'
+                      : course_choice.status === 'not_selected'
                         ? 'border-gray-200 bg-gray-50 opacity-75'
                         : 'border-transparent bg-gray-50'
                   }`}
                 >
                   <p className="text-sm text-gray-600">
-                    {enrollment.choice_rank === 2 ? 'Second Choice' : 'First Choice'}
+                    {course_choice.choice_rank === 2 ? 'Second Choice' : 'First Choice'}
                   </p>
                   <p className="font-semibold text-gray-900">
-                    {enrollment.courses?.name || 'N/A'}
+                    {course_choice.courses?.name || 'N/A'}
                   </p>
-                  {enrollment.courses?.code && (
-                    <p className="text-sm text-gray-500">{enrollment.courses.code}</p>
+                  {course_choice.courses?.code && (
+                    <p className="text-sm text-gray-500">{course_choice.courses.code}</p>
                   )}
                   <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    {enrollment.status === 'enrolled'
-                      ? 'Approved Course'
-                      : enrollment.status === 'not_selected'
+                    {course_choice.status === 'enrolled'
+                      ? 'Approved Choice'
+                      : course_choice.status === 'not_selected'
                         ? 'Not Selected'
                         : 'Pending Selection'}
                   </p>
@@ -253,12 +299,12 @@ const AdminStudentProfilePage = () => {
         </div>
 
         {/* Manual Review */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="w-full bg-white rounded-lg shadow p-6 mb-6">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">Manual Requirements Review</h3>
               <p className="text-sm text-gray-600 mt-1">
-                Manually check the uploaded requirements below, then accept or decline the application.
+                Manually check the uploaded requirements below, then accept, decline, or send feedback.
               </p>
             </div>
             <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(student.status)}`}>
@@ -301,35 +347,35 @@ const AdminStudentProfilePage = () => {
 
         {/* Action Section */}
         {student.status === 'pending' && (
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="w-full bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Application Decision</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Approve Course Choice</label>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  {sortedChoices.map((enrollment) => (
+                  {sortedChoices.map((course_choice) => (
                     <label
-                      key={enrollment.id}
+                      key={course_choice.id}
                       className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 ${
-                        approvedEnrollmentId === enrollment.id
+                        approvedChoiceId === course_choice.id
                           ? 'border-green-500 bg-green-50'
                           : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
                       }`}
                     >
                       <input
                         type="radio"
-                        name="approved_enrollment_id"
-                        value={enrollment.id}
-                        checked={approvedEnrollmentId === enrollment.id}
-                        onChange={(e) => setApprovedEnrollmentId(e.target.value)}
+                        name="approved_choice_id"
+                        value={course_choice.id}
+                        checked={approvedChoiceId === course_choice.id}
+                        onChange={(e) => setApprovedChoiceId(e.target.value)}
                         className="mt-1"
                       />
                       <span>
                         <span className="block text-sm text-gray-600">
-                          {enrollment.choice_rank === 2 ? 'Second Choice' : 'First Choice'}
+                          {course_choice.choice_rank === 2 ? 'Second Choice' : 'First Choice'}
                         </span>
                         <span className="block font-semibold text-gray-900">
-                          {enrollment.courses?.name || 'N/A'}
+                          {course_choice.courses?.name || 'N/A'}
                         </span>
                       </span>
                     </label>
@@ -365,6 +411,61 @@ const AdminStudentProfilePage = () => {
                   {actionLoading ? 'Processing...' : 'Decline'}
                 </button>
               </div>
+
+              <div className="border-t border-gray-200 pt-4">
+                <h4 className="mb-3 flex items-center gap-2 font-semibold text-gray-900">
+                  <MessageSquare className="h-4 w-4 text-blue-600" />
+                  Send Feedback
+                </h4>
+                <div className="mb-3 flex flex-wrap gap-2">
+                  {feedbackTemplates.map((template) => (
+                    <button
+                      key={template.key}
+                      type="button"
+                      onClick={() => handleTemplateClick(template)}
+                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                        selectedTemplate === template.key
+                          ? 'border-blue-500 bg-blue-50 text-blue-700'
+                          : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {template.message}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  value={feedbackMessage}
+                  onChange={(e) => setFeedbackMessage(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="Write feedback for the student without accepting or declining..."
+                />
+                <button
+                  type="button"
+                  onClick={handleSendFeedback}
+                  disabled={actionLoading || !feedbackMessage.trim()}
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:bg-gray-400"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  {actionLoading ? 'Sending...' : 'Send Feedback'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {feedback.length > 0 && (
+          <div className="mt-6 rounded-lg bg-white p-6 shadow">
+            <h3 className="mb-4 text-lg font-semibold text-gray-900">Feedback Sent</h3>
+            <div className="space-y-3">
+              {feedback.map((item) => (
+                <div key={item.id} className="rounded-lg border border-blue-100 bg-blue-50 p-3">
+                  <p className="text-sm text-blue-900">{item.message}</p>
+                  <p className="mt-1 text-xs text-blue-700">
+                    {new Date(item.created_at).toLocaleString()} - {item.is_read ? 'Read' : 'Unread'}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -376,9 +477,9 @@ const AdminStudentProfilePage = () => {
             </h3>
             {student.status === 'approved' && (
               <p>
-                {student.admin_notes || 'The student has been accepted for enrollment.'}
+                {student.admin_notes || 'The student has been accepted for admission.'}
                 {approvedChoice?.courses?.name && (
-                  <span className="block mt-2 font-semibold">Approved course: {approvedChoice.courses.name}</span>
+                  <span className="block mt-2 font-semibold">Approved Choice: {approvedChoice.courses.name}</span>
                 )}
               </p>
             )}

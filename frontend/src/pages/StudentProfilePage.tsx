@@ -67,7 +67,7 @@ const StudentProfilePage = () => {
       ['gender', 'Please select a gender'],
       ['phone', 'Phone number is required'],
       ['date_of_birth', 'Date of birth is required'],
-      ['address', 'Address is required'],
+      ['address', 'Street/Barangay is required'],
       ['city', 'City is required'],
       ['province', 'Province is required'],
       ['zip_code', 'Zip code is required'],
@@ -229,7 +229,7 @@ const StudentProfilePage = () => {
       />
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="mx-auto w-full max-w-7xl px-6 py-8">
         <div className="bg-white rounded-lg shadow p-6">
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
@@ -333,7 +333,7 @@ const StudentProfilePage = () => {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Address Information</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Street/Barangay</label>
                   <input
                     type="text"
                     name="address"
@@ -345,7 +345,7 @@ const StudentProfilePage = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">City/Municipality</label>
                     <input
                       type="text"
                       name="city"

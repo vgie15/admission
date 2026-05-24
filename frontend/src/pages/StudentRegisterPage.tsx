@@ -65,6 +65,7 @@ const strandOptions = ['STEM', 'ABM', 'HUMSS', 'GAS', 'TVL', 'ICT', 'Arts and De
 const schoolYears = ['2026-2027', '2025-2026', '2024-2025'];
 const semesters = ['First Semester', 'Second Semester', 'Summer'];
 const maxFileSize = 5 * 1024 * 1024;
+const passwordPolicyMessage = 'Password must include at least 1 uppercase letter, 1 number, and 1 special character.';
 
 const StudentRegisterPage = () => {
   const navigate = useNavigate();
@@ -123,6 +124,8 @@ const StudentRegisterPage = () => {
   };
 
   const shouldShowError = (field: string) => Boolean(fieldErrors[field] && attemptedSteps[getFieldStep(field)]);
+  const shouldShowStepError = Boolean(error && attemptedSteps[step]);
+  const shouldShowDocumentError = (key: DocumentKey) => Boolean(documentSubmitAttempted && fieldErrors[key]);
 
   const inputClassName = (field: string) =>
     `w-full rounded-xl border px-4 py-3 text-base outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 ${
@@ -131,6 +134,9 @@ const StudentRegisterPage = () => {
 
   const fieldError = (field: string) =>
     shouldShowError(field) ? <p className="mt-1 text-sm text-red-600">{fieldErrors[field]}</p> : null;
+
+  const documentFieldError = (field: DocumentKey) =>
+    shouldShowDocumentError(field) ? <p className="mt-1 text-sm text-red-600">{fieldErrors[field]}</p> : null;
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
@@ -181,8 +187,14 @@ const StudentRegisterPage = () => {
       if (formData.phone && !/^09\d{9}$/.test(formData.phone)) {
         errors.phone = 'Enter a valid PH mobile number, like 09123456789';
       }
-      if (formData.password && formData.password.length < 6) {
-        errors.password = 'Password must be at least 6 characters';
+      if (formData.password && formData.password.length < 8) {
+        errors.password = 'Password must be at least 8 characters';
+      } else if (formData.password && !/[A-Z]/.test(formData.password)) {
+        errors.password = passwordPolicyMessage;
+      } else if (formData.password && !/\d/.test(formData.password)) {
+        errors.password = passwordPolicyMessage;
+      } else if (formData.password && !/[^A-Za-z0-9]/.test(formData.password)) {
+        errors.password = passwordPolicyMessage;
       }
       if (formData.password && formData.confirm_password && formData.password !== formData.confirm_password) {
         errors.confirm_password = 'Passwords do not match';
@@ -366,7 +378,7 @@ const StudentRegisterPage = () => {
             <div>
               {renderTextInput('password', 'Create Password', {
                 type: 'password',
-                placeholder: 'Minimum 6 characters',
+                placeholder: 'Minimum 8 characters',
                 required: true,
               })}
               <p className="mt-2 text-sm text-gray-500">You'll use this to login to your student account</p>
@@ -398,8 +410,8 @@ const StudentRegisterPage = () => {
               {fieldError('gender')}
             </div>
           </div>
-          {renderTextInput('address', 'Complete Address', {
-            placeholder: 'House No., Street, Barangay',
+          {renderTextInput('address', 'Street/Barangay', {
+            placeholder: 'Street, Barangay',
             required: true,
           })}
           <div className="grid gap-5 md:grid-cols-3">
@@ -474,11 +486,11 @@ const StudentRegisterPage = () => {
               accept=".pdf,.jpg,.jpeg,.png"
               onChange={(event) => handleFileChange(key, event.target.files?.[0] || null)}
               className={`w-full rounded-xl px-4 py-3 file:mr-3 file:border-0 file:bg-transparent file:font-semibold ${
-                documentSubmitAttempted && fieldErrors[key] ? 'bg-red-50 text-red-700' : 'bg-gray-100'
+                shouldShowDocumentError(key) ? 'bg-red-50 text-red-700' : 'bg-gray-100'
               }`}
             />
             {documents[key] && <p className="mt-1 text-sm text-gray-500">Selected: {documents[key]?.name}</p>}
-            {documentSubmitAttempted ? fieldError(key) : null}
+            {documentFieldError(key)}
           </div>
         ))}
         <div className="rounded-xl bg-yellow-50 px-5 py-4 text-yellow-800">
@@ -500,7 +512,7 @@ const StudentRegisterPage = () => {
 
           {renderStepper()}
 
-          {error && (
+          {shouldShowStepError && (
             <div className="mb-6 flex gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
               <AlertCircle className="h-5 w-5 flex-shrink-0" />
               <p>{error}</p>
