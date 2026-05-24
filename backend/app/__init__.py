@@ -15,7 +15,7 @@ def create_app():
     app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', './uploads')
     
     # Initialize extensions
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=False)
     jwt = JWTManager(app)
     
     # Create upload folder if it doesn't exist
