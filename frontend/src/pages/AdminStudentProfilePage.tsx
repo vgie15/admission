@@ -196,7 +196,7 @@ const AdminStudentProfilePage = () => {
       />
 
       {/* Main Content */}
-      <main className="mx-auto w-full max-w-7xl px-6 py-8">
+      <main className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8">
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />

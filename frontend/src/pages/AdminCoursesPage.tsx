@@ -84,7 +84,7 @@ const AdminCoursesPage = () => {
       />
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-5 sm:px-6 sm:py-8">
         {/* Add Course Form */}
         {showForm && (
           <div className="bg-white rounded-lg shadow p-6 mb-8">

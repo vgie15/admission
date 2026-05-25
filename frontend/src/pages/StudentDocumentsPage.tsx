@@ -120,7 +120,7 @@ const StudentDocumentsPage = () => {
         onBack={() => navigate('/student/dashboard')}
       />
 
-      <main className="mx-auto w-full max-w-7xl px-6 py-8">
+      <main className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8">
         {error && (
           <div className="mb-6 flex gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
             <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-600" />

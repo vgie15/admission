@@ -115,9 +115,9 @@ const AdminApplicantsPage = () => {
         onBack={() => navigate('/admin/dashboard')}
       />
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-5 sm:px-6 sm:py-8">
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-5 sm:mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
@@ -203,7 +203,7 @@ const AdminApplicantsPage = () => {
         </div>
 
         {/* Applicants Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-lg shadow overflow-x-auto">
           {filteredApplicants.length === 0 ? (
             <div className="p-6 text-center text-gray-600">No applicants found.</div>
           ) : (

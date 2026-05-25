@@ -128,16 +128,16 @@ const LandingPage: React.FC = () => {
   );
 
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900">
       {/* Background decorative elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl"></div>
+      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="relative z-10 mx-auto h-full max-w-7xl px-6 py-6">
-        <div className="grid h-full grid-cols-1 items-center gap-8 lg:grid-cols-[1fr_0.85fr]">
-          
+      <div className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[1fr_0.85fr] lg:min-h-screen">
+
           {/* Left Section */}
-          <div className="text-white space-y-5">
+          <div className="text-white space-y-4 sm:space-y-5">
             {/* Header */}
             <div className="space-y-2">
               <div className="flex items-center gap-3">
@@ -172,7 +172,7 @@ const LandingPage: React.FC = () => {
             </p>
 
             {/* Features Grid */}
-            <div className="grid grid-cols-2 gap-4 pt-1">
+            <div className="grid grid-cols-2 gap-3 pt-1 sm:gap-4">
               {/* Digital Application */}
               <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 hover:bg-white/20 transition-all hover:border-cyan-400/50">
                 <div className="bg-blue-500 w-10 h-10 rounded-lg flex items-center justify-center mb-2">
@@ -211,7 +211,7 @@ const LandingPage: React.FC = () => {
             </div>
 
             {/* Bottom Stats */}
-            <div className="flex items-center gap-6 pt-4 border-t border-white/20">
+            <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-white/20 sm:gap-6">
               <div className="flex items-center gap-2">
                 <Award className="w-5 h-5 text-yellow-400" />
                 <span className="text-sm">CHED Recognized</span>
@@ -228,13 +228,13 @@ const LandingPage: React.FC = () => {
           </div>
 
           {/* Right Section - Portal Access */}
-          <div className="lg:flex hidden justify-end">
+          <div className="hidden lg:flex justify-end">
             {renderPortalCard()}
           </div>
         </div>
 
-        {/* Mobile Portal Card - Shown on mobile */}
-        <div className="lg:hidden mt-12">
+        {/* Mobile Portal Card */}
+        <div className="lg:hidden pb-8">
           {renderPortalCard(true)}
         </div>
       </div>

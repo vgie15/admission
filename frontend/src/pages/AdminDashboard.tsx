@@ -311,9 +311,9 @@ const AdminDashboard = () => {
       />
 
       {/* Main Content */}
-      <main className="mx-auto w-full max-w-7xl px-6 py-8">
+      <main className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8">
         {/* Filter Panel */}
-        <div className="mb-8 rounded-2xl bg-white p-6 shadow">
+        <div className="mb-5 sm:mb-8 rounded-2xl bg-white p-4 sm:p-6 shadow">
           <div className="grid grid-cols-1 gap-5 md:grid-cols-[1fr_1fr_1.2fr_auto] md:items-end">
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">School Year</label>
@@ -372,31 +372,31 @@ const AdminDashboard = () => {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-5 sm:mb-8">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <p className="text-gray-600 text-sm font-medium">Total Applicants</p>
-            <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.total_applicants || 0}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{stats?.total_applicants || 0}</p>
             <div className="mt-2">
               <KpiArrow pct={getKpiChange(stats?.total_applicants || 0, lastYearStats?.total_applicants)} />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <p className="text-gray-600 text-sm font-medium">Approved</p>
-            <p className="text-3xl font-bold text-green-600 mt-2">{stats?.total_approved || 0}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-green-600 mt-2">{stats?.total_approved || 0}</p>
             <div className="mt-2">
               <KpiArrow pct={getKpiChange(stats?.total_approved || 0, lastYearStats?.total_approved)} />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <p className="text-gray-600 text-sm font-medium">Pending</p>
-            <p className="text-3xl font-bold text-yellow-600 mt-2">{stats?.total_pending || 0}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-yellow-600 mt-2">{stats?.total_pending || 0}</p>
             <div className="mt-2">
               <KpiArrow pct={getKpiChange(stats?.total_pending || 0, lastYearStats?.total_pending)} />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <p className="text-gray-600 text-sm font-medium">Rejected</p>
-            <p className="text-3xl font-bold text-red-600 mt-2">{stats?.total_rejected || 0}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-red-600 mt-2">{stats?.total_rejected || 0}</p>
             <div className="mt-2">
               <KpiArrow pct={getKpiChange(stats?.total_rejected || 0, lastYearStats?.total_rejected)} />
             </div>
@@ -404,7 +404,7 @@ const AdminDashboard = () => {
         </div>
 
         {isRegistrar && (
-          <div className="mb-8 rounded-2xl bg-white p-6 shadow">
+          <div className="mb-5 sm:mb-8 rounded-2xl bg-white p-4 sm:p-6 shadow">
             <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Approved for Admission</h3>
@@ -436,7 +436,7 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-xl border border-gray-200">
+            <div className="overflow-x-auto rounded-xl border border-gray-200">
               <table className="w-full text-left text-sm">
                 <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
                   <tr>
@@ -480,9 +480,9 @@ const AdminDashboard = () => {
         )}
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-5 sm:mb-8">
           {/* Application Trend */}
-          <div className="bg-white rounded-lg shadow p-6 min-h-[420px]">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 min-h-[360px] sm:min-h-[420px]">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Application Trend</h3>
             {applicationTrend && Object.keys(applicationTrend).length > 0 ? (
               <div className="h-[320px]">
@@ -508,7 +508,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Applicants per Course */}
-          <div className="bg-white rounded-lg shadow p-6 min-h-[420px]">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 min-h-[360px] sm:min-h-[420px]">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Applicants per Course</h3>
             {applicantsPerCourse && Object.keys(applicantsPerCourse).length > 0 ? (
               <div className="h-[320px]">
@@ -536,7 +536,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* First Choice Distribution */}
-          <div className="bg-white rounded-lg shadow p-6 min-h-[420px]">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 min-h-[360px] sm:min-h-[420px]">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">First Choice Distribution</h3>
             {firstChoiceDistribution && Object.keys(firstChoiceDistribution).length > 0 ? (
                 <div className="mx-auto h-[320px] w-full max-w-[360px]">
@@ -564,7 +564,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Overall Gender Distribution */}
-          <div className="bg-white rounded-lg shadow p-6 min-h-[420px]">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 min-h-[360px] sm:min-h-[420px]">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Overall Gender Distribution</h3>
             {genderDistribution && Object.keys(genderDistribution).length > 0 ? (
               <div className="mx-auto h-[320px] w-full max-w-[360px]">
@@ -589,7 +589,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Approved Gender Distribution */}
-          <div className="bg-white rounded-lg shadow p-6 min-h-[420px]">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 min-h-[360px] sm:min-h-[420px]">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Approved Gender Distribution</h3>
             {approvedGenderDistribution && Object.keys(approvedGenderDistribution).length > 0 ? (
               <div className="mx-auto h-[320px] w-full max-w-[360px]">
@@ -614,7 +614,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Overall City Distribution */}
-          <div className="bg-white rounded-lg shadow p-6 min-h-[420px]">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 min-h-[360px] sm:min-h-[420px]">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Overall City/Town Distribution</h3>
             {cityDistribution && Object.keys(cityDistribution).length > 0 ? (
               <div className="h-[320px]">
@@ -638,7 +638,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Approved City Distribution */}
-          <div className="bg-white rounded-lg shadow p-6 min-h-[420px]">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 min-h-[360px] sm:min-h-[420px]">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Approved City/Town Distribution</h3>
             {approvedCityDistribution && Object.keys(approvedCityDistribution).length > 0 ? (
               <div className="h-[320px]">
@@ -662,7 +662,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Application Status */}
-          <div className="bg-white rounded-lg shadow p-6 min-h-[420px]">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 min-h-[360px] sm:min-h-[420px]">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Application Status</h3>
             {applicationStatus && Object.keys(applicationStatus).length > 0 ? (
               <div className="mx-auto h-[320px] w-full max-w-[360px]">
@@ -687,7 +687,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Approval Rate per Course */}
-          <div className="bg-white rounded-lg shadow p-6 min-h-[420px]">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 min-h-[360px] sm:min-h-[420px]">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Approval Rate per Course</h3>
             {approvalRate && Object.keys(approvalRate).length > 0 ? (
               <div className="h-[320px]">

@@ -229,8 +229,8 @@ const StudentProfilePage = () => {
       />
 
       {/* Main Content */}
-      <main className="mx-auto w-full max-w-7xl px-6 py-8">
-        <div className="bg-white rounded-lg shadow p-6">
+      <main className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />

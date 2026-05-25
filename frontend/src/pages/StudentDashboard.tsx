@@ -96,14 +96,14 @@ const StudentDashboard = () => {
       />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-5">
+      <main className="max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-5">
         {/* Welcome Section */}
         <div className="relative overflow-hidden bg-white rounded-xl shadow p-5 mb-5 border border-blue-100">
           <div className="absolute right-0 top-0 h-full w-64 bg-gradient-to-l from-blue-50 to-transparent" />
-          <div className="relative flex items-center justify-between gap-6">
+          <div className="relative flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">Student Dashboard</p>
-              <h2 className="text-2xl font-bold text-gray-900 mt-1">
+              <h2 className="text-xl font-bold text-gray-900 mt-1 sm:text-2xl">
                 Welcome, {profile?.first_name} {profile?.last_name}!
               </h2>
               <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
@@ -164,7 +164,7 @@ const StudentDashboard = () => {
               {[...applicationStatus.course_choices]
                 .sort((a: any, b: any) => (a.choice_rank || 1) - (b.choice_rank || 1))
                 .map((course_choice: any) => (
-                <div key={course_choice.id} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                <div key={course_choice.id} className="flex flex-wrap justify-between items-center gap-2 p-4 bg-gray-50 rounded-lg">
                   <div>
                     <p className="font-semibold text-gray-900">{course_choice.courses?.name || 'Unknown Course'}</p>
                     <p className="text-sm text-gray-600">

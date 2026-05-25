@@ -504,7 +504,7 @@ const StudentRegisterPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-8 text-gray-950">
       <main className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl items-center justify-center">
-        <div className="w-full rounded-lg bg-white p-8 shadow-xl md:p-10">
+        <div className="w-full rounded-lg bg-white p-5 shadow-xl sm:p-8 md:p-10">
           <div className="mb-8 text-center">
             <h1 className="text-3xl font-bold text-gray-800">Student Application</h1>
             <p className="mt-2 text-gray-600">Complete your admission application</p>
