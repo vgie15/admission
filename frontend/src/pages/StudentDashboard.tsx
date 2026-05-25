@@ -100,39 +100,38 @@ const StudentDashboard = () => {
         {/* Welcome Section */}
         <div className="relative overflow-hidden bg-white rounded-xl shadow p-5 mb-5 border border-blue-100">
           <div className="absolute right-0 top-0 h-full w-64 bg-gradient-to-l from-blue-50 to-transparent" />
-          <div className="relative flex flex-col gap-4">
-            <div className="flex items-center justify-between gap-6">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">Student Dashboard</p>
-                <h2 className="text-2xl font-bold text-gray-900 mt-1">
-                  Welcome, {profile?.first_name} {profile?.last_name}!
-                </h2>
-                <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                  <span className="text-gray-600">{profile?.email}</span>
-                  <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700 ring-1 ring-blue-100">
-                    <Hash className="h-4 w-4" />
-                    {identityLabel}: {identityValue}
-                  </span>
-                </div>
-              </div>
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 ring-1 ring-blue-100">
-                <User className="w-8 h-8" />
+          <div className="relative flex items-center justify-between gap-6">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">Student Dashboard</p>
+              <h2 className="text-2xl font-bold text-gray-900 mt-1">
+                Welcome, {profile?.first_name} {profile?.last_name}!
+              </h2>
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+                <span className="text-gray-600">{profile?.email}</span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700 ring-1 ring-blue-100">
+                  <Hash className="h-4 w-4" />
+                  {identityLabel}: {identityValue}
+                </span>
               </div>
             </div>
-            <div className="flex flex-wrap gap-3 border-t border-blue-50 pt-4">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate('/student/profile')}
-                className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition"
+                className="flex flex-col items-center gap-1.5 group"
               >
-                <User className="w-4 h-4" />
-                Profile Information
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 ring-1 ring-blue-100 group-hover:bg-blue-100 transition">
+                  <User className="w-7 h-7" />
+                </div>
+                <span className="text-xs font-semibold text-gray-600 group-hover:text-blue-600 transition">Profile</span>
               </button>
               <button
                 onClick={() => navigate('/student/documents')}
-                className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-green-50 hover:border-green-200 hover:text-green-700 transition"
+                className="flex flex-col items-center gap-1.5 group"
               >
-                <FileUp className="w-4 h-4" />
-                Documents
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50 text-green-600 ring-1 ring-green-100 group-hover:bg-green-100 transition">
+                  <FileUp className="w-7 h-7" />
+                </div>
+                <span className="text-xs font-semibold text-gray-600 group-hover:text-green-600 transition">Documents</span>
               </button>
             </div>
           </div>
