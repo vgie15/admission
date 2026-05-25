@@ -60,7 +60,6 @@ export const adminService = {
   getDashboardStats: (filters?: any) => apiClient.get('/admin/dashboard-stats', { params: filters }),
   getApplicants: (filters?: any) => apiClient.get('/admin/applicants', { params: filters }),
   getStudentProfile: (studentId: string) => apiClient.get(`/admin/student/${studentId}`),
-  deleteStudent: (studentId: string) => apiClient.delete(`/admin/student/${studentId}`),
   getDocumentViewUrl: (documentId: string) => `${API_BASE_URL}/admin/document/${documentId}/view`,
   sendFeedback: (studentId: string, message: string, templateKey?: string) =>
     apiClient.post(`/admin/student/${studentId}/feedback`, { message, template_key: templateKey }),

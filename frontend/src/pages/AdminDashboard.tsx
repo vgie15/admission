@@ -306,9 +306,9 @@ const AdminDashboard = () => {
 
       {/* Main Content */}
       <main className="mx-auto w-full max-w-7xl px-6 py-8">
-        {/* Filter Panel — admin only; registrar filters live inside the approved admissions card */}
-        {!isRegistrar && <div className="mb-8 rounded-2xl bg-white p-6 shadow">
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:items-end">
+        {/* Filter Panel */}
+        <div className="mb-8 rounded-2xl bg-white p-6 shadow">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-[1fr_1fr_1.2fr_auto] md:items-end">
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">School Year</label>
               <select
@@ -353,8 +353,17 @@ const AdminDashboard = () => {
               </select>
             </div>
 
+            {isRegistrar && (
+              <button
+                onClick={handleExportApprovedAdmissions}
+                className="flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-6 font-bold text-white hover:shadow-lg"
+              >
+                <Download className="w-4 h-4" />
+                Export to Excel
+              </button>
+            )}
           </div>
-        </div>}
+        </div>
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -390,87 +399,34 @@ const AdminDashboard = () => {
 
         {isRegistrar && (
           <div className="mb-8 rounded-2xl bg-white p-6 shadow">
-            <div className="mb-5 flex flex-col gap-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Approved for Admission</h3>
-                  <p className="text-sm text-gray-500">View-only list of students accepted for admission.</p>
-                </div>
-                <button
-                  onClick={handleExportApprovedAdmissions}
-                  className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 self-start sm:self-auto"
-                >
-                  <Download className="w-4 h-4" />
-                  Export to Excel
-                </button>
-              </div>
-              {/* Filters */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-700">School Year</label>
-                  <select
-                    value={filters.school_year}
-                    onChange={(e) => handleFilterChange('school_year', e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  >
-                    <option value="">All School Years</option>
-                    <option value="2026-2027">2026-2027</option>
-                    <option value="2025-2026">2025-2026</option>
-                    <option value="2024-2025">2024-2025</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-700">Semester</label>
-                  <select
-                    value={filters.semester}
-                    onChange={(e) => handleFilterChange('semester', e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  >
-                    <option value="">All Semesters</option>
-                    <option value="1st">1st Semester</option>
-                    <option value="2nd">2nd Semester</option>
-                    <option value="summer">Summer</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-700">Filter by Course</label>
-                  <select
-                    value={filters.course}
-                    onChange={(e) => handleFilterChange('course', e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  >
-                    <option value="">All Courses</option>
-                    {courses.map((course) => (
-                      <option key={course.id} value={course.id}>
-                        {course.code ? `${course.code} - ${course.name}` : course.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div className="mb-4 flex justify-end gap-3">
+            <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
-                <label className="mb-1 block text-xs font-semibold text-gray-700">Sort by</label>
-                <select
-                  value={approvedSort.sort_by}
-                  onChange={(e) => handleApprovedSortChange('sort_by', e.target.value)}
-                  className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                >
-                  <option value="approved_at">Approval Time</option>
-                  <option value="course">Approved Course</option>
-                </select>
+                <h3 className="text-lg font-semibold text-gray-900">Approved for Admission</h3>
+                <p className="text-sm text-gray-500">View-only list of students accepted for admission.</p>
               </div>
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-gray-700">Order</label>
-                <select
-                  value={approvedSort.sort_order}
-                  onChange={(e) => handleApprovedSortChange('sort_order', e.target.value)}
-                  className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                >
-                  <option value="desc">Newest First</option>
-                  <option value="asc">Oldest First</option>
-                </select>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-700">Sort by</label>
+                  <select
+                    value={approvedSort.sort_by}
+                    onChange={(e) => handleApprovedSortChange('sort_by', e.target.value)}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  >
+                    <option value="approved_at">Approval Time</option>
+                    <option value="course">Approved Course</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-700">Order</label>
+                  <select
+                    value={approvedSort.sort_order}
+                    onChange={(e) => handleApprovedSortChange('sort_order', e.target.value)}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  >
+                    <option value="desc">Newest First</option>
+                    <option value="asc">Oldest First</option>
+                  </select>
+                </div>
               </div>
             </div>
 

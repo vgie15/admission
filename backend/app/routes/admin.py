@@ -228,27 +228,6 @@ def get_student_profile(student_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@admin_bp.route('/student/<student_id>', methods=['DELETE'])
-@admin_required
-def delete_student(student_id):
-    """Delete a student applicant and related records."""
-    try:
-        supabase = get_supabase()
-
-        student = supabase.table('students').select('id').eq('id', student_id).execute()
-        if not student.data:
-            return jsonify({'error': 'Student not found'}), 404
-
-        supabase.table('documents').delete().eq('student_id', student_id).execute()
-        supabase.table('application_feedback').delete().eq('student_id', student_id).execute()
-        supabase.table('course_choices').delete().eq('student_id', student_id).execute()
-        supabase.table('students').delete().eq('id', student_id).execute()
-
-        return jsonify({'message': 'Applicant deleted successfully'}), 200
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 @admin_bp.route('/document/<document_id>/view', methods=['GET'])
 def view_document(document_id):
     """View an uploaded student requirement."""
