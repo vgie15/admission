@@ -1,12 +1,17 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_mail import Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from app.utils import get_supabase
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import re
+import secrets
+
+# In-memory token store: { token: { email, expires_at } }
+reset_tokens = {}
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -376,14 +381,78 @@ def verify_token():
 
 @auth_bp.route('/forgot-password', methods=['POST'])
 def forgot_password():
-    """Reset student password by email"""
+    """Send password reset email with a one-time token link"""
     try:
         data = request.get_json()
-        email = (data.get('email') or '').strip()
+        email = (data.get('email') or '').strip().lower()
+
+        if not email:
+            return jsonify({'error': 'Email is required'}), 400
+
+        supabase = get_supabase()
+        result = supabase.table('students').select('id, first_name').eq('email', email).execute()
+        if not result.data:
+            # Don't reveal if email exists or not — just say "check your email"
+            return jsonify({'message': 'If that email is registered, a reset link has been sent.'}), 200
+
+        student = result.data[0]
+        first_name = student.get('first_name', 'Student')
+
+        # Generate a secure one-time token valid for 15 minutes
+        token = secrets.token_urlsafe(32)
+        reset_tokens[token] = {
+            'email': email,
+            'expires_at': datetime.now() + timedelta(minutes=15),
+        }
+
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3001')
+        reset_link = f"{frontend_url}/reset-password?token={token}"
+
+        # Send email
+        from app import mail
+        msg = Message(
+            subject='PSU-UCC Admission Portal – Password Reset',
+            recipients=[email],
+        )
+        msg.html = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; background: #f9fafb; border-radius: 12px;">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <h2 style="color: #1e40af; margin: 0;">PSU-UCC Admission Portal</h2>
+                <p style="color: #6b7280; font-size: 14px;">Incoming Freshmen Application System</p>
+            </div>
+            <div style="background: white; border-radius: 10px; padding: 28px; border: 1px solid #e5e7eb;">
+                <p style="color: #111827; font-size: 16px;">Hi <strong>{first_name}</strong>,</p>
+                <p style="color: #374151;">We received a request to reset your password. Click the button below to set a new password. This link expires in <strong>15 minutes</strong>.</p>
+                <div style="text-align: center; margin: 32px 0;">
+                    <a href="{reset_link}" style="background: #2563eb; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">
+                        Reset My Password
+                    </a>
+                </div>
+                <p style="color: #6b7280; font-size: 13px;">If you didn't request a password reset, you can safely ignore this email.</p>
+                <p style="color: #9ca3af; font-size: 12px; margin-top: 24px; border-top: 1px solid #f3f4f6; padding-top: 16px;">
+                    Or copy this link: <span style="color: #2563eb;">{reset_link}</span>
+                </p>
+            </div>
+        </div>
+        """
+        mail.send(msg)
+
+        return jsonify({'message': 'If that email is registered, a reset link has been sent.'}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@auth_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    """Reset password using a valid token"""
+    try:
+        data = request.get_json()
+        token = (data.get('token') or '').strip()
         new_password = (data.get('new_password') or '').strip()
         confirm_password = (data.get('confirm_password') or '').strip()
 
-        if not email or not new_password or not confirm_password:
+        if not token or not new_password or not confirm_password:
             return jsonify({'error': 'All fields are required'}), 400
 
         if new_password != confirm_password:
@@ -393,15 +462,23 @@ def forgot_password():
         if password_error:
             return jsonify({'error': password_error, 'fields': {'new_password': password_error}}), 400
 
-        supabase = get_supabase()
-        result = supabase.table('students').select('id').eq('email', email).execute()
-        if not result.data:
-            return jsonify({'error': 'No account found with that email address'}), 404
+        token_data = reset_tokens.get(token)
+        if not token_data:
+            return jsonify({'error': 'Invalid or expired reset link. Please request a new one.'}), 400
 
+        if datetime.now() > token_data['expires_at']:
+            del reset_tokens[token]
+            return jsonify({'error': 'This reset link has expired. Please request a new one.'}), 400
+
+        email = token_data['email']
+        supabase = get_supabase()
         hashed = generate_password_hash(new_password)
         supabase.table('students').update({'password': hashed}).eq('email', email).execute()
 
-        return jsonify({'message': 'Password reset successfully'}), 200
+        # Delete token so it can't be reused
+        del reset_tokens[token]
+
+        return jsonify({'message': 'Password reset successfully. You can now log in.'}), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500

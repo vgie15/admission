@@ -14,6 +14,7 @@ import AdminApplicantsPage from './pages/AdminApplicantsPage';
 import AdminStudentProfilePage from './pages/AdminStudentProfilePage';
 import AdminCoursesPage from './pages/AdminCoursesPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 const ProtectedRoute = ({
   children,
@@ -45,6 +46,7 @@ const App = () => {
           <Route path="/register" element={<StudentRegisterPage />} />
           <Route path="/login" element={<LoginPage role="student" />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/admin/login" element={<LoginPage role="admin" />} />
           <Route path="/registrar/login" element={<LoginPage role="registrar" />} />
 

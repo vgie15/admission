@@ -1,19 +1,31 @@
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from flask_mail import Mail
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 
+mail = Mail()
+
 def create_app():
     app = Flask(__name__)
-    
+
     # Configuration
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'dev-secret-key')
     app.config['JWT_ALGORITHM'] = os.getenv('JWT_ALGORITHM', 'HS256')
     app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', './uploads')
-    
+
+    # Flask-Mail (Brevo SMTP)
+    app.config['MAIL_SERVER'] = 'smtp-relay.brevo.com'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USE_SSL'] = False
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+    app.config['MAIL_DEFAULT_SENDER'] = ('PSU-UCC Admission Portal', os.getenv('MAIL_USERNAME'))
+
     # Initialize extensions
     CORS(
         app,
@@ -22,6 +34,7 @@ def create_app():
         allow_headers=["Content-Type", "Authorization"],
     )
     jwt = JWTManager(app)
+    mail.init_app(app)
     
     # Create upload folder if it doesn't exist
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
