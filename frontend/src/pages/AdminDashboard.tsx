@@ -164,15 +164,21 @@ const AdminDashboard = () => {
       const currentStats = fallbackData(statsRes, null);
       setStats(currentStats);
 
-      // Load last year stats for KPI comparison
-      const currentYear = params.school_year;
-      if (currentYear) {
-        const parts = currentYear.split('-');
+      // Load last year stats for KPI comparison arrows — only when a specific year is selected
+      const selectedYear = params.school_year;
+      if (selectedYear) {
+        const parts = selectedYear.split('-');
         if (parts.length === 2) {
           const prevYear = `${parseInt(parts[0]) - 1}-${parseInt(parts[1]) - 1}`;
           try {
             const prevRes = await adminService.getDashboardStats({ ...params, school_year: prevYear });
-            setLastYearStats(prevRes.data);
+            const prevData = prevRes.data;
+            // Only show arrows if previous year actually has data
+            if (prevData && prevData.total_applicants > 0) {
+              setLastYearStats(prevData);
+            } else {
+              setLastYearStats(null);
+            }
           } catch {
             setLastYearStats(null);
           }
