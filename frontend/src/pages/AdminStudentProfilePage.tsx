@@ -145,8 +145,7 @@ const AdminStudentProfilePage = () => {
         key: `document_${document.document_type}`,
         message: documentFeedbackMessages[document.document_type],
       })),
-    { key: 'review_profile', message: 'Please review and update your profile information.' },
-    { key: 'approved_enrolment', message: 'Approved for enrolment.' },
+    { key: 'review_profile', message: 'Please review and update your profile information.' }
   ];
 
   if (loading) {
