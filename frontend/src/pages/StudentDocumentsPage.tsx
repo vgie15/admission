@@ -172,7 +172,7 @@ const StudentDocumentsPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2 sm:min-w-[360px]">
+                  <div className="flex flex-wrap items-center gap-2 ml-auto">
                     {document && (
                       <button
                         type="button"
