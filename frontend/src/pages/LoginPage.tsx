@@ -101,6 +101,18 @@ const LoginPage: React.FC<LoginPageProps> = ({ role }) => {
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
+
+          {role === 'student' && (
+            <div className="text-right">
+              <button
+                type="button"
+                onClick={() => navigate('/forgot-password')}
+                className="text-sm text-blue-600 hover:underline font-medium"
+              >
+                Forgot Password?
+              </button>
+            </div>
+          )}
         </form>
 
         {role === 'student' && (

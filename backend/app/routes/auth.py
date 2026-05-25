@@ -373,3 +373,35 @@ def verify_token():
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 401
+
+@auth_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    """Reset student password by email"""
+    try:
+        data = request.get_json()
+        email = (data.get('email') or '').strip()
+        new_password = (data.get('new_password') or '').strip()
+        confirm_password = (data.get('confirm_password') or '').strip()
+
+        if not email or not new_password or not confirm_password:
+            return jsonify({'error': 'All fields are required'}), 400
+
+        if new_password != confirm_password:
+            return jsonify({'error': 'Passwords do not match', 'fields': {'confirm_password': 'Passwords do not match'}}), 400
+
+        password_error = password_policy_error(new_password)
+        if password_error:
+            return jsonify({'error': password_error, 'fields': {'new_password': password_error}}), 400
+
+        supabase = get_supabase()
+        result = supabase.table('students').select('id').eq('email', email).execute()
+        if not result.data:
+            return jsonify({'error': 'No account found with that email address'}), 404
+
+        hashed = generate_password_hash(new_password)
+        supabase.table('students').update({'password': hashed}).eq('email', email).execute()
+
+        return jsonify({'message': 'Password reset successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

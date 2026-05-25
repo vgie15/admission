@@ -31,6 +31,8 @@ export const authService = {
   adminLogin: (email: string, password: string) =>
     apiClient.post('/auth/admin-login', { email, password }),
   verifyToken: () => apiClient.get('/auth/verify-token'),
+  forgotPassword: (email: string, new_password: string, confirm_password: string) =>
+    apiClient.post('/auth/forgot-password', { email, new_password, confirm_password }),
 };
 
 // Student Service
