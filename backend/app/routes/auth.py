@@ -381,7 +381,7 @@ def verify_token():
 
 @auth_bp.route('/forgot-password', methods=['POST'])
 def forgot_password():
-    """Send password reset email with a one-time token link"""
+    """Send a 6-digit reset code to the student's email"""
     try:
         data = request.get_json()
         email = (data.get('email') or '').strip().lower()
@@ -392,26 +392,21 @@ def forgot_password():
         supabase = get_supabase()
         result = supabase.table('students').select('id, first_name').eq('email', email).execute()
         if not result.data:
-            # Don't reveal if email exists or not — just say "check your email"
-            return jsonify({'message': 'If that email is registered, a reset link has been sent.'}), 200
+            return jsonify({'error': 'No account found with that email address.'}), 404
 
         student = result.data[0]
         first_name = student.get('first_name', 'Student')
 
-        # Generate a secure one-time token valid for 15 minutes
-        token = secrets.token_urlsafe(32)
-        reset_tokens[token] = {
-            'email': email,
+        # Generate a 6-digit code valid for 15 minutes
+        code = str(secrets.randbelow(900000) + 100000)
+        reset_tokens[email] = {
+            'code': code,
             'expires_at': datetime.now() + timedelta(minutes=15),
         }
 
-        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3001')
-        reset_link = f"{frontend_url}/reset-password?token={token}"
-
-        # Send email
         from app import mail
         msg = Message(
-            subject='PSU-UCC Admission Portal – Password Reset',
+            subject='PSU-UCC Admission Portal – Password Reset Code',
             recipients=[email],
         )
         msg.html = f"""
@@ -422,22 +417,47 @@ def forgot_password():
             </div>
             <div style="background: white; border-radius: 10px; padding: 28px; border: 1px solid #e5e7eb;">
                 <p style="color: #111827; font-size: 16px;">Hi <strong>{first_name}</strong>,</p>
-                <p style="color: #374151;">We received a request to reset your password. Click the button below to set a new password. This link expires in <strong>15 minutes</strong>.</p>
+                <p style="color: #374151;">Use the code below to reset your password. This code expires in <strong>15 minutes</strong>.</p>
                 <div style="text-align: center; margin: 32px 0;">
-                    <a href="{reset_link}" style="background: #2563eb; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">
-                        Reset My Password
-                    </a>
+                    <div style="display: inline-block; background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 12px; padding: 20px 40px;">
+                        <p style="margin: 0; font-size: 42px; font-weight: bold; letter-spacing: 10px; color: #1d4ed8;">{code}</p>
+                    </div>
                 </div>
-                <p style="color: #6b7280; font-size: 13px;">If you didn't request a password reset, you can safely ignore this email.</p>
-                <p style="color: #9ca3af; font-size: 12px; margin-top: 24px; border-top: 1px solid #f3f4f6; padding-top: 16px;">
-                    Or copy this link: <span style="color: #2563eb;">{reset_link}</span>
-                </p>
+                <p style="color: #6b7280; font-size: 13px;">If you didn't request this, you can safely ignore this email.</p>
             </div>
         </div>
         """
         mail.send(msg)
 
-        return jsonify({'message': 'If that email is registered, a reset link has been sent.'}), 200
+        return jsonify({'message': 'Reset code sent to your email.'}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@auth_bp.route('/verify-reset-code', methods=['POST'])
+def verify_reset_code():
+    """Verify the 6-digit reset code"""
+    try:
+        data = request.get_json()
+        email = (data.get('email') or '').strip().lower()
+        code = (data.get('code') or '').strip()
+
+        if not email or not code:
+            return jsonify({'error': 'Email and code are required'}), 400
+
+        token_data = reset_tokens.get(email)
+        if not token_data:
+            return jsonify({'error': 'No reset code found. Please request a new one.'}), 400
+
+        if datetime.now() > token_data['expires_at']:
+            del reset_tokens[email]
+            return jsonify({'error': 'Code has expired. Please request a new one.'}), 400
+
+        if token_data['code'] != code:
+            return jsonify({'error': 'Incorrect code. Please try again.'}), 400
+
+        return jsonify({'message': 'Code verified.'}), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -445,14 +465,15 @@ def forgot_password():
 
 @auth_bp.route('/reset-password', methods=['POST'])
 def reset_password():
-    """Reset password using a valid token"""
+    """Reset password after code has been verified"""
     try:
         data = request.get_json()
-        token = (data.get('token') or '').strip()
+        email = (data.get('email') or '').strip().lower()
+        code = (data.get('code') or '').strip()
         new_password = (data.get('new_password') or '').strip()
         confirm_password = (data.get('confirm_password') or '').strip()
 
-        if not token or not new_password or not confirm_password:
+        if not email or not code or not new_password or not confirm_password:
             return jsonify({'error': 'All fields are required'}), 400
 
         if new_password != confirm_password:
@@ -462,21 +483,22 @@ def reset_password():
         if password_error:
             return jsonify({'error': password_error, 'fields': {'new_password': password_error}}), 400
 
-        token_data = reset_tokens.get(token)
+        token_data = reset_tokens.get(email)
         if not token_data:
-            return jsonify({'error': 'Invalid or expired reset link. Please request a new one.'}), 400
+            return jsonify({'error': 'No reset code found. Please request a new one.'}), 400
 
         if datetime.now() > token_data['expires_at']:
-            del reset_tokens[token]
-            return jsonify({'error': 'This reset link has expired. Please request a new one.'}), 400
+            del reset_tokens[email]
+            return jsonify({'error': 'Code has expired. Please request a new one.'}), 400
 
-        email = token_data['email']
+        if token_data['code'] != code:
+            return jsonify({'error': 'Incorrect code.'}), 400
+
         supabase = get_supabase()
         hashed = generate_password_hash(new_password)
         supabase.table('students').update({'password': hashed}).eq('email', email).execute()
 
-        # Delete token so it can't be reused
-        del reset_tokens[token]
+        del reset_tokens[email]
 
         return jsonify({'message': 'Password reset successfully. You can now log in.'}), 200
 

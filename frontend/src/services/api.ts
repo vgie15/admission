@@ -33,8 +33,10 @@ export const authService = {
   verifyToken: () => apiClient.get('/auth/verify-token'),
   forgotPassword: (email: string) =>
     apiClient.post('/auth/forgot-password', { email }),
-  resetPassword: (token: string, new_password: string, confirm_password: string) =>
-    apiClient.post('/auth/reset-password', { token, new_password, confirm_password }),
+  verifyResetCode: (email: string, code: string) =>
+    apiClient.post('/auth/verify-reset-code', { email, code }),
+  resetPassword: (email: string, code: string, new_password: string, confirm_password: string) =>
+    apiClient.post('/auth/reset-password', { email, code, new_password, confirm_password }),
 };
 
 // Student Service
