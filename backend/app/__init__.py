@@ -18,7 +18,7 @@ def create_app():
     app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', './uploads')
 
     # Flask-Mail (Brevo SMTP)
-    app.config['MAIL_SERVER'] = 'smtp-relay.brevo.com'
+    app.config['MAIL_SERVER'] = 'smtp.brevo.com'
     app.config['MAIL_PORT'] = 587
     app.config['MAIL_USE_TLS'] = True
     app.config['MAIL_USE_SSL'] = False
