@@ -67,17 +67,15 @@ const StudentDashboard = () => {
     return 'Pending Review';
   };
 
-  const getApplicationNumber = () => {
-    if (profile?.application_number) return profile.application_number;
+  const getStudentId = () => {
+    if (profile?.student_id) return profile.student_id;
 
     const source = String(profile?.id || profile?.email || 'student');
     const hash = [...source].reduce((total, char) => total + char.charCodeAt(0), 0) % 10000;
     return `26-UR-${String(hash || 151).padStart(4, '0')}`;
   };
 
-  const hasOfficialStudentId = applicationStatus?.overall_status === 'approved' && profile?.student_id;
-  const identityLabel = hasOfficialStudentId ? 'Student ID' : 'Application No.';
-  const identityValue = hasOfficialStudentId ? profile.student_id : getApplicationNumber();
+  const isApproved = applicationStatus?.overall_status === 'approved';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -108,10 +106,16 @@ const StudentDashboard = () => {
               </h2>
               <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
                 <span className="text-gray-600">{profile?.email}</span>
-                <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700 ring-1 ring-blue-100">
-                  <Hash className="h-4 w-4" />
-                  {identityLabel}: {identityValue}
-                </span>
+                {isApproved ? (
+                  <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700 ring-1 ring-blue-100">
+                    <Hash className="h-4 w-4" />
+                    Student ID: {getStudentId()}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700 ring-1 ring-blue-100">
+                    Applicant
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-3">
