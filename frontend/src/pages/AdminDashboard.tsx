@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { adminService } from '../services/api';
-import { LogOut, Users, Download, BookOpen } from 'lucide-react';
+import { LogOut, Users, BookOpen, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import PortalHeader from '../components/PortalHeader';
 import {
   Chart as ChartJS,
@@ -109,6 +109,7 @@ const AdminDashboard = () => {
     semester: '',
     course: '',
   });
+  const [lastYearStats, setLastYearStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const fallbackData = (result: PromiseSettledResult<any>, fallback: any = {}) =>
@@ -160,7 +161,26 @@ const AdminDashboard = () => {
         approvedAdmissionsRes,
       ] = results;
 
-      setStats(fallbackData(statsRes, null));
+      const currentStats = fallbackData(statsRes, null);
+      setStats(currentStats);
+
+      // Load last year stats for KPI comparison
+      const currentYear = params.school_year;
+      if (currentYear) {
+        const parts = currentYear.split('-');
+        if (parts.length === 2) {
+          const prevYear = `${parseInt(parts[0]) - 1}-${parseInt(parts[1]) - 1}`;
+          try {
+            const prevRes = await adminService.getDashboardStats({ ...params, school_year: prevYear });
+            setLastYearStats(prevRes.data);
+          } catch {
+            setLastYearStats(null);
+          }
+        }
+      } else {
+        setLastYearStats(null);
+      }
+
       setApplicationTrend(fallbackData(trendRes));
       setApplicantsPerCourse(fallbackData(courseRes));
       setFirstChoiceDistribution(fallbackData(firstChoiceRes));
@@ -184,34 +204,34 @@ const AdminDashboard = () => {
     navigate('/');
   };
 
-  const handleExport = async () => {
-    try {
-      const response = await adminService.exportData(activeFilters());
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'students_export.xlsx');
-      document.body.appendChild(link);
-      link.click();
-      link.parentElement?.removeChild(link);
-    } catch (error) {
-      console.error('Export failed:', error);
-    }
+  const getKpiChange = (current: number, previous: number | undefined) => {
+    if (previous === undefined || previous === null || !lastYearStats) return null;
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return Math.round(((current - previous) / previous) * 100);
   };
 
-  const handleExportApprovedAdmissions = async () => {
-    try {
-      const response = await adminService.exportApprovedAdmissions(activeFilters());
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'approved_admissions.xlsx');
-      document.body.appendChild(link);
-      link.click();
-      link.parentElement?.removeChild(link);
-    } catch (error) {
-      console.error('Approved admissions export failed:', error);
-    }
+  const KpiArrow = ({ pct }: { pct: number | null }) => {
+    if (pct === null) return null;
+    if (pct > 0)
+      return (
+        <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-green-600">
+          <TrendingUp className="w-3 h-3" />
+          {pct}% vs last year
+        </span>
+      );
+    if (pct < 0)
+      return (
+        <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-red-500">
+          <TrendingDown className="w-3 h-3" />
+          {Math.abs(pct)}% vs last year
+        </span>
+      );
+    return (
+      <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-gray-400">
+        <Minus className="w-3 h-3" />
+        No change vs last year
+      </span>
+    );
   };
 
   const handleFilterChange = (name: string, value: string) => {
@@ -273,7 +293,7 @@ const AdminDashboard = () => {
       <main className="mx-auto w-full max-w-7xl px-6 py-8">
         {/* Filter Panel */}
         <div className="mb-8 rounded-2xl bg-white p-6 shadow">
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-[1fr_1fr_1.2fr_auto] md:items-end">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:items-end">
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">School Year</label>
               <select
@@ -318,13 +338,6 @@ const AdminDashboard = () => {
               </select>
             </div>
 
-            <button
-              onClick={isRegistrar ? handleExportApprovedAdmissions : handleExport}
-              className="flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-6 font-bold text-white hover:shadow-lg"
-            >
-              <Download className="w-4 h-4" />
-              {isRegistrar ? 'Export Approved' : 'Export to Excel'}
-            </button>
           </div>
         </div>
 
@@ -333,18 +346,30 @@ const AdminDashboard = () => {
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm font-medium">Total Applicants</p>
             <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.total_applicants || 0}</p>
+            <div className="mt-2">
+              <KpiArrow pct={getKpiChange(stats?.total_applicants || 0, lastYearStats?.total_applicants)} />
+            </div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm font-medium">Approved</p>
             <p className="text-3xl font-bold text-green-600 mt-2">{stats?.total_approved || 0}</p>
+            <div className="mt-2">
+              <KpiArrow pct={getKpiChange(stats?.total_approved || 0, lastYearStats?.total_approved)} />
+            </div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm font-medium">Pending</p>
             <p className="text-3xl font-bold text-yellow-600 mt-2">{stats?.total_pending || 0}</p>
+            <div className="mt-2">
+              <KpiArrow pct={getKpiChange(stats?.total_pending || 0, lastYearStats?.total_pending)} />
+            </div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm font-medium">Rejected</p>
             <p className="text-3xl font-bold text-red-600 mt-2">{stats?.total_rejected || 0}</p>
+            <div className="mt-2">
+              <KpiArrow pct={getKpiChange(stats?.total_rejected || 0, lastYearStats?.total_rejected)} />
+            </div>
           </div>
         </div>
 

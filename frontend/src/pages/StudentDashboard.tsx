@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { studentService } from '../services/api';
-import { LogOut, FileUp, BookOpen, Clock, User, Hash } from 'lucide-react';
+import { LogOut, FileUp, Clock, User, Hash } from 'lucide-react';
 import PortalHeader from '../components/PortalHeader';
 
 const StudentDashboard = () => {
@@ -158,23 +158,6 @@ const StudentDashboard = () => {
             <p className="text-gray-600 text-sm mt-1">View or replace files</p>
           </button>
 
-          <button
-            onClick={() => navigate('/student/courses')}
-            className="bg-white rounded-lg shadow p-5 hover:shadow-lg transition text-left"
-          >
-            <BookOpen className="w-8 h-8 text-purple-600 mb-3" />
-            <h3 className="font-semibold text-gray-900">Course Selection</h3>
-            <p className="text-gray-600 text-sm mt-1">Choose your course</p>
-          </button>
-
-          <button
-            onClick={() => navigate('/student/status')}
-            className="bg-white rounded-lg shadow p-5 hover:shadow-lg transition text-left"
-          >
-            <Clock className="w-8 h-8 text-orange-600 mb-3" />
-            <h3 className="font-semibold text-gray-900">Status Tracking</h3>
-            <p className="text-gray-600 text-sm mt-1">Check application status</p>
-          </button>
         </div>
 
         {/* Course Choices */}

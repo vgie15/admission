@@ -1,20 +1,37 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminService } from '../services/api';
-import { Search, Eye, Trash2 } from 'lucide-react';
+import { Search, Eye, Download } from 'lucide-react';
 import PortalHeader from '../components/PortalHeader';
 
 const AdminApplicantsPage = () => {
   const navigate = useNavigate();
   const [applicants, setApplicants] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState('');
+  const [exporting, setExporting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [schoolYearFilter, setSchoolYearFilter] = useState('');
+  const [semesterFilter, setSemesterFilter] = useState('');
+  const [courseFilter, setCourseFilter] = useState('');
+
+  useEffect(() => {
+    loadCourses();
+  }, []);
 
   useEffect(() => {
     loadApplicants();
   }, [statusFilter]);
+
+  const loadCourses = async () => {
+    try {
+      const res = await adminService.getCourses();
+      setCourses(res.data || []);
+    } catch (error) {
+      console.error('Failed to load courses:', error);
+    }
+  };
 
   const loadApplicants = async () => {
     try {
@@ -31,11 +48,16 @@ const AdminApplicantsPage = () => {
 
   const filteredApplicants = applicants.filter((app) => {
     const searchLower = searchTerm.toLowerCase();
-    return (
+    const matchesSearch =
       app.first_name?.toLowerCase().includes(searchLower) ||
       app.last_name?.toLowerCase().includes(searchLower) ||
-      app.email?.toLowerCase().includes(searchLower)
-    );
+      app.email?.toLowerCase().includes(searchLower);
+
+    const matchesSchoolYear = !schoolYearFilter || app.school_year === schoolYearFilter;
+    const matchesSemester = !semesterFilter || (app.semester || '').toLowerCase().includes(semesterFilter.toLowerCase());
+    const matchesCourse = !courseFilter || (app.course_choices || []).some((c: any) => c.course_id === courseFilter);
+
+    return matchesSearch && matchesSchoolYear && matchesSemester && matchesCourse;
   });
 
   const getStatusColor = (status: string) => {
@@ -49,19 +71,27 @@ const AdminApplicantsPage = () => {
     }
   };
 
-  const handleDelete = async (applicant: any) => {
-    const name = `${applicant.first_name || ''} ${applicant.last_name || ''}`.trim() || applicant.email;
-    const confirmed = window.confirm(`Delete applicant "${name}"? This will remove their profile, course choices, and uploaded documents.`);
-    if (!confirmed) return;
-
-    setDeletingId(applicant.id);
+  const handleExport = async () => {
+    setExporting(true);
     try {
-      await adminService.deleteStudent(applicant.id);
-      setApplicants((prev) => prev.filter((item) => item.id !== applicant.id));
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to delete applicant');
+      const filters: any = {};
+      if (statusFilter) filters.status = statusFilter;
+      if (schoolYearFilter) filters.school_year = schoolYearFilter;
+      if (semesterFilter) filters.semester = semesterFilter;
+      if (courseFilter) filters.course = courseFilter;
+
+      const response = await adminService.exportData(filters);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'applicants_export.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.parentElement?.removeChild(link);
+    } catch (error) {
+      console.error('Export failed:', error);
     } finally {
-      setDeletingId('');
+      setExporting(false);
     }
   };
 
@@ -85,11 +115,10 @@ const AdminApplicantsPage = () => {
         onBack={() => navigate('/admin/dashboard')}
       />
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
               <div className="relative">
@@ -116,7 +145,61 @@ const AdminApplicantsPage = () => {
                 <option value="rejected">Rejected</option>
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">School Year</label>
+              <select
+                value={schoolYearFilter}
+                onChange={(e) => setSchoolYearFilter(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">All School Years</option>
+                <option value="2026-2027">2026-2027</option>
+                <option value="2025-2026">2025-2026</option>
+                <option value="2024-2025">2024-2025</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+              <select
+                value={semesterFilter}
+                onChange={(e) => setSemesterFilter(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">All Semesters</option>
+                <option value="1st">1st Semester</option>
+                <option value="2nd">2nd Semester</option>
+                <option value="summer">Summer</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
+              <select
+                value={courseFilter}
+                onChange={(e) => setCourseFilter(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">All Courses</option>
+                {courses.map((course) => (
+                  <option key={course.id} value={course.id}>
+                    {course.code ? `${course.code} - ${course.name}` : course.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-end">
+              <button
+                onClick={handleExport}
+                disabled={exporting}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 font-semibold"
+              >
+                <Download className="w-4 h-4" />
+                {exporting ? 'Exporting...' : 'Export to Excel'}
+              </button>
+            </div>
           </div>
+          <p className="text-sm text-gray-500">
+            Showing {filteredApplicants.length} of {applicants.length} applicants. Export respects active filters.
+          </p>
         </div>
 
         {/* Applicants Table */}
@@ -148,7 +231,6 @@ const AdminApplicantsPage = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => navigate(`/admin/student/${applicant.id}`)}
                         className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
@@ -156,15 +238,6 @@ const AdminApplicantsPage = () => {
                         <Eye className="w-4 h-4" />
                         View
                       </button>
-                      <button
-                        onClick={() => handleDelete(applicant)}
-                        disabled={deletingId === applicant.id}
-                        className="flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700 disabled:bg-gray-400"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        {deletingId === applicant.id ? 'Deleting...' : 'Delete'}
-                      </button>
-                      </div>
                     </td>
                   </tr>
                 ))}

@@ -15,7 +15,7 @@ const AdminStudentProfilePage = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [actionReason, setActionReason] = useState('');
   const [feedbackMessage, setFeedbackMessage] = useState('');
-  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
   const [approvedChoiceId, setApprovedChoiceId] = useState('');
   const [error, setError] = useState<string>('');
   const [previewDocument, setPreviewDocument] = useState<any>(null);
@@ -74,9 +74,18 @@ const AdminStudentProfilePage = () => {
     }
   };
 
-  const handleTemplateClick = (template: { key: string; message: string }) => {
-    setSelectedTemplate(template.key);
-    setFeedbackMessage(template.message);
+  const handleTemplateClick = (template: { key: string; message: string }, allTemplates: { key: string; message: string }[]) => {
+    const isSelected = selectedTemplates.includes(template.key);
+    const updated = isSelected
+      ? selectedTemplates.filter((k) => k !== template.key)
+      : [...selectedTemplates, template.key];
+    setSelectedTemplates(updated);
+    // Build combined message from all selected templates in order
+    const combined = allTemplates
+      .filter((t) => updated.includes(t.key))
+      .map((t) => t.message)
+      .join('\n');
+    setFeedbackMessage(combined);
   };
 
   const handleSendFeedback = async () => {
@@ -88,10 +97,10 @@ const AdminStudentProfilePage = () => {
 
     setActionLoading(true);
     try {
-      await adminService.sendFeedback(studentId, feedbackMessage.trim(), selectedTemplate || undefined);
+      await adminService.sendFeedback(studentId, feedbackMessage.trim(), selectedTemplates.join(',') || undefined);
       await loadStudentProfile();
       setFeedbackMessage('');
-      setSelectedTemplate('');
+      setSelectedTemplates([]);
       setError('');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to send feedback');
@@ -417,21 +426,32 @@ const AdminStudentProfilePage = () => {
                   <MessageSquare className="h-4 w-4 text-blue-600" />
                   Send Feedback
                 </h4>
+                <p className="mb-2 text-xs text-gray-500">Select one or more feedback items (can choose multiple):</p>
                 <div className="mb-3 flex flex-wrap gap-2">
-                  {feedbackTemplates.map((template) => (
-                    <button
-                      key={template.key}
-                      type="button"
-                      onClick={() => handleTemplateClick(template)}
-                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                        selectedTemplate === template.key
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      {template.message}
-                    </button>
-                  ))}
+                  {feedbackTemplates.map((template) => {
+                    const isSelected = selectedTemplates.includes(template.key);
+                    return (
+                      <button
+                        key={template.key}
+                        type="button"
+                        onClick={() => handleTemplateClick(template, feedbackTemplates)}
+                        className={`rounded-full border px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 ${
+                          isSelected
+                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <span className={`inline-flex h-3.5 w-3.5 items-center justify-center rounded border ${isSelected ? 'border-blue-500 bg-blue-500' : 'border-gray-400'}`}>
+                          {isSelected && (
+                            <svg viewBox="0 0 10 10" className="h-2.5 w-2.5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+                              <polyline points="1.5,5 4,7.5 8.5,2.5" />
+                            </svg>
+                          )}
+                        </span>
+                        {template.message}
+                      </button>
+                    );
+                  })}
                 </div>
                 <textarea
                   value={feedbackMessage}

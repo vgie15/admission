@@ -20,6 +20,7 @@ const StudentDocumentsPage = () => {
   const [error, setError] = useState<string>('');
   const [selectedFiles, setSelectedFiles] = useState<Record<string, File | null>>({});
   const [previewDocument, setPreviewDocument] = useState<any>(null);
+  const [newFilePreview, setNewFilePreview] = useState<{ documentType: string; url: string; filename: string; isImage: boolean } | null>(null);
 
   useEffect(() => {
     loadDocuments();
@@ -53,6 +54,15 @@ const StudentDocumentsPage = () => {
   const handleFileSelect = (documentType: string, file: File | null) => {
     setSelectedFiles((prev) => ({ ...prev, [documentType]: file }));
     setError('');
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setNewFilePreview({
+        documentType,
+        url,
+        filename: file.name,
+        isImage: /\.(png|jpe?g)$/i.test(file.name),
+      });
+    }
   };
 
   const handleUpload = async (documentType: string) => {
@@ -68,6 +78,7 @@ const StudentDocumentsPage = () => {
     try {
       await studentService.uploadDocument(file, documentType);
       setSelectedFiles((prev) => ({ ...prev, [documentType]: null }));
+      setNewFilePreview(null);
       await loadDocuments();
     } catch (err: any) {
       setError(err.response?.data?.error || 'Upload failed');
@@ -132,7 +143,6 @@ const StudentDocumentsPage = () => {
           {documentTypes.map((type) => {
             const document = documentsByType[type.key];
             const selectedFile = selectedFiles[type.key];
-            const uploading = uploadingType === type.key;
 
             return (
               <div key={type.key} className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
@@ -162,37 +172,30 @@ const StudentDocumentsPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-3 sm:min-w-[360px]">
-                    <div className="flex gap-2">
-                      {document && (
-                        <button
-                          type="button"
-                          onClick={() => openDocument(document)}
-                          className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 font-semibold text-blue-700 hover:bg-blue-100"
-                        >
-                          <Eye className="h-4 w-4" />
-                          View
-                        </button>
-                      )}
-                      <label className="flex-1">
-                        <span className="sr-only">Replace {type.label}</span>
-                        <input
-                          type="file"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(event) => handleFileSelect(type.key, event.target.files?.[0] || null)}
-                          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm file:mr-3 file:border-0 file:bg-transparent file:font-semibold"
-                        />
-                      </label>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleUpload(type.key)}
-                      disabled={uploading || !selectedFile}
-                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:bg-gray-400"
-                    >
+                  <div className="flex flex-wrap items-center gap-2 sm:min-w-[360px]">
+                    {document && (
+                      <button
+                        type="button"
+                        onClick={() => openDocument(document)}
+                        className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 font-semibold text-blue-700 hover:bg-blue-100"
+                      >
+                        <Eye className="h-4 w-4" />
+                        View
+                      </button>
+                    )}
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50">
                       <Upload className="h-4 w-4" />
-                      {uploading ? 'Uploading...' : document ? 'Replace Document' : 'Upload Document'}
-                    </button>
+                      {document ? 'Choose File' : 'Upload Document'}
+                      <input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="sr-only"
+                        onChange={(event) => handleFileSelect(type.key, event.target.files?.[0] || null)}
+                      />
+                    </label>
+                    {selectedFile && (
+                      <span className="text-xs text-gray-500 break-all max-w-[180px] truncate">{selectedFile.name}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -204,6 +207,55 @@ const StudentDocumentsPage = () => {
           Accepted formats: PDF, JPG, JPEG, PNG. Maximum size: 5MB per file.
         </div>
       </main>
+
+      {newFilePreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/70 px-4 py-6">
+          <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-gray-200 px-5 py-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Preview New File</h3>
+                <p className="text-sm text-gray-500 break-all">{newFilePreview.filename}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setNewFilePreview(null);
+                  setSelectedFiles((prev) => ({ ...prev, [newFilePreview.documentType]: null }));
+                }}
+                className="rounded-full p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+              >
+                <XCircle className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-auto bg-gray-100 p-4">
+              {newFilePreview.isImage ? (
+                <img
+                  src={newFilePreview.url}
+                  alt={newFilePreview.filename}
+                  className="mx-auto max-h-[55vh] max-w-full rounded-lg bg-white object-contain shadow"
+                />
+              ) : (
+                <iframe
+                  src={newFilePreview.url}
+                  title={newFilePreview.filename}
+                  className="h-[55vh] w-full rounded-lg bg-white"
+                />
+              )}
+            </div>
+            <div className="border-t border-gray-200 px-5 py-4">
+              <button
+                type="button"
+                onClick={() => handleUpload(newFilePreview.documentType)}
+                disabled={uploadingType === newFilePreview.documentType}
+                className="w-full flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white hover:bg-blue-700 disabled:bg-gray-400"
+              >
+                <Upload className="h-4 w-4" />
+                {uploadingType === newFilePreview.documentType ? 'Uploading...' : 'Replace Document'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {previewDocument && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/70 px-4 py-6">
