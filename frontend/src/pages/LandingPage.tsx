@@ -133,7 +133,7 @@ const LandingPage: React.FC = () => {
       <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-6">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 py-3 sm:px-6">
         <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[1fr_0.85fr] lg:min-h-screen">
 
           {/* Left Section */}
