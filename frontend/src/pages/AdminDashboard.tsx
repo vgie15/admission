@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { adminService } from '../services/api';
-import { LogOut, Users, BookOpen, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { LogOut, Users, BookOpen, TrendingUp, TrendingDown, Minus, Download } from 'lucide-react';
 import PortalHeader from '../components/PortalHeader';
 import {
   Chart as ChartJS,
@@ -234,6 +234,21 @@ const AdminDashboard = () => {
     );
   };
 
+  const handleExportApprovedAdmissions = async () => {
+    try {
+      const response = await adminService.exportApprovedAdmissions(activeFilters());
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'approved_admissions.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.parentElement?.removeChild(link);
+    } catch (error) {
+      console.error('Export failed:', error);
+    }
+  };
+
   const handleFilterChange = (name: string, value: string) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
@@ -380,6 +395,13 @@ const AdminDashboard = () => {
                 <h3 className="text-lg font-semibold text-gray-900">Approved for Admission</h3>
                 <p className="text-sm text-gray-500">View-only list of students accepted for admission.</p>
               </div>
+              <button
+                onClick={handleExportApprovedAdmissions}
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+              >
+                <Download className="w-4 h-4" />
+                Export to Excel
+              </button>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-xs font-semibold text-gray-700">Sort by</label>
