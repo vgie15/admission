@@ -617,7 +617,7 @@ def get_gender_distribution():
         supabase = get_supabase()
         
         filters = get_filter_params()
-        students_result = supabase.table('students').select('gender, created_at, course_choices(*)').execute()
+        students_result = supabase.table('students').select('gender, school_year, semester, course_choices(*)').execute()
         students = [s for s in students_result.data if student_matches_filters(s, filters)]
         
         gender_dist = {}
@@ -638,7 +638,7 @@ def get_approved_gender_distribution():
         supabase = get_supabase()
 
         filters = get_filter_params()
-        students_result = supabase.table('students').select('gender, status, created_at, course_choices(*)').eq('status', 'approved').execute()
+        students_result = supabase.table('students').select('gender, status, school_year, semester, course_choices(*)').eq('status', 'approved').execute()
         students = [s for s in students_result.data if student_matches_filters(s, filters)]
 
         return jsonify(count_by_field(students, 'gender')), 200
@@ -654,7 +654,7 @@ def get_city_distribution():
         supabase = get_supabase()
 
         filters = get_filter_params()
-        students_result = supabase.table('students').select('city, created_at, course_choices(*)').execute()
+        students_result = supabase.table('students').select('city, school_year, semester, course_choices(*)').execute()
         students = [s for s in students_result.data if student_matches_filters(s, filters)]
 
         return jsonify(count_by_field(students, 'city')), 200
@@ -670,7 +670,7 @@ def get_approved_city_distribution():
         supabase = get_supabase()
 
         filters = get_filter_params()
-        students_result = supabase.table('students').select('city, status, created_at, course_choices(*)').eq('status', 'approved').execute()
+        students_result = supabase.table('students').select('city, status, school_year, semester, course_choices(*)').eq('status', 'approved').execute()
         students = [s for s in students_result.data if student_matches_filters(s, filters)]
 
         return jsonify(count_by_field(students, 'city')), 200
@@ -686,7 +686,7 @@ def get_application_status_distribution():
         supabase = get_supabase()
         
         filters = get_filter_params()
-        students_result = supabase.table('students').select('status, created_at, course_choices(*)').execute()
+        students_result = supabase.table('students').select('status, school_year, semester, course_choices(*)').execute()
         students = [s for s in students_result.data if student_matches_filters(s, filters)]
         
         status_dist = {}

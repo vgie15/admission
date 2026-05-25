@@ -213,7 +213,7 @@ const AdminStudentProfilePage = () => {
                 <div>
                   <p className="text-sm text-gray-600">Full Name</p>
                   <p className="font-semibold text-gray-900">
-                    {student.first_name} {student.last_name}
+                    {student.first_name} {student.middle_name ? `${student.middle_name} ` : ''}{student.last_name}
                   </p>
                 </div>
                 <div>
@@ -227,6 +227,26 @@ const AdminStudentProfilePage = () => {
                 <div>
                   <p className="text-sm text-gray-600">Date of Birth</p>
                   <p className="font-semibold text-gray-900">{student.date_of_birth || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Gender</p>
+                  <p className="font-semibold text-gray-900">{student.gender || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Address</p>
+                  <p className="font-semibold text-gray-900">{student.address || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">City / Municipality</p>
+                  <p className="font-semibold text-gray-900">{student.city || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Province</p>
+                  <p className="font-semibold text-gray-900">{student.province || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Zip Code</p>
+                  <p className="font-semibold text-gray-900">{student.zip_code || 'N/A'}</p>
                 </div>
               </div>
             </div>

@@ -484,7 +484,7 @@ const AdminDashboard = () => {
           {/* Application Trend */}
           <div className="bg-white rounded-lg shadow p-6 min-h-[420px]">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Application Trend</h3>
-            {applicationTrend && Object.keys(applicationTrend).length > 0 && (
+            {applicationTrend && Object.keys(applicationTrend).length > 0 ? (
               <div className="h-[320px]">
                 <Line
                   data={{
@@ -502,13 +502,15 @@ const AdminDashboard = () => {
                   options={{ responsive: true, maintainAspectRatio: false }}
                 />
               </div>
+            ) : (
+              <p className="text-sm text-gray-500">No application trend data available.</p>
             )}
           </div>
 
           {/* Applicants per Course */}
           <div className="bg-white rounded-lg shadow p-6 min-h-[420px]">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Applicants per Course</h3>
-            {applicantsPerCourse && Object.keys(applicantsPerCourse).length > 0 && (
+            {applicantsPerCourse && Object.keys(applicantsPerCourse).length > 0 ? (
               <div className="h-[320px]">
                 <Bar
                   data={{
@@ -528,6 +530,8 @@ const AdminDashboard = () => {
                   }}
                 />
               </div>
+            ) : (
+              <p className="text-sm text-gray-500">No applicants per course data available.</p>
             )}
           </div>
 
@@ -562,7 +566,7 @@ const AdminDashboard = () => {
           {/* Overall Gender Distribution */}
           <div className="bg-white rounded-lg shadow p-6 min-h-[420px]">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Overall Gender Distribution</h3>
-            {genderDistribution && Object.keys(genderDistribution).length > 0 && (
+            {genderDistribution && Object.keys(genderDistribution).length > 0 ? (
               <div className="mx-auto h-[320px] w-full max-w-[360px]">
                 <Doughnut
                   data={{
@@ -579,6 +583,8 @@ const AdminDashboard = () => {
                   options={doughnutOptions}
                 />
               </div>
+            ) : (
+              <p className="text-sm text-gray-500">No gender distribution data available.</p>
             )}
           </div>
 
@@ -658,7 +664,7 @@ const AdminDashboard = () => {
           {/* Application Status */}
           <div className="bg-white rounded-lg shadow p-6 min-h-[420px]">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Application Status</h3>
-            {applicationStatus && Object.keys(applicationStatus).length > 0 && (
+            {applicationStatus && Object.keys(applicationStatus).length > 0 ? (
               <div className="mx-auto h-[320px] w-full max-w-[360px]">
                 <Pie
                   data={{
@@ -675,13 +681,15 @@ const AdminDashboard = () => {
                   options={doughnutOptions}
                 />
               </div>
+            ) : (
+              <p className="text-sm text-gray-500">No application status data available.</p>
             )}
           </div>
 
           {/* Approval Rate per Course */}
           <div className="bg-white rounded-lg shadow p-6 min-h-[420px]">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Approval Rate per Course</h3>
-            {approvalRate && Object.keys(approvalRate).length > 0 && (
+            {approvalRate && Object.keys(approvalRate).length > 0 ? (
               <div className="h-[320px]">
                 <Bar
                   data={{
@@ -697,6 +705,8 @@ const AdminDashboard = () => {
                   options={{ responsive: true, maintainAspectRatio: false, indexAxis: 'y' }}
                 />
               </div>
+            ) : (
+              <p className="text-sm text-gray-500">No approval rate data available.</p>
             )}
           </div>
         </div>
